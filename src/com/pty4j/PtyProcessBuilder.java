@@ -92,7 +92,7 @@ public class PtyProcessBuilder {
   }
 
   @NotNull
-  public PtyProcessBuilder setAdditionalPtyFD(int fileDescriptor) {
+  public PtyProcessBuilder setAdditionalPtyFD(@Nullable Integer fileDescriptor) {
     myAdditionalPtyFD = fileDescriptor;
     return this;
   }

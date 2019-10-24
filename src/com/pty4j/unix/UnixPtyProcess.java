@@ -8,6 +8,7 @@
 package com.pty4j.unix;
 
 import com.google.common.base.MoreObjects;
+import com.pty4j.AdditionalPtyProcess;
 import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessOptions;
 import com.pty4j.WinSize;
@@ -21,7 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-public class UnixPtyProcess extends PtyProcess {
+public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
   public int NOOP = 0;
   public int SIGHUP = 1;
   public int SIGINT = 2;
@@ -65,7 +66,10 @@ public class UnixPtyProcess extends PtyProcess {
   private InputStream err;
   private final Pty myPty;
   private final Pty myErrPty;
+
   private final Pty myAdditionalPty;
+  private OutputStream myAdditionalPtyOut;
+  private InputStream myAdditionalPtyIn;
 
 //  @Deprecated
 //  public UnixPtyProcess(String[] cmdarray, String[] envp, String dir, Pty pty, Pty errPty) throws IOException {
@@ -118,6 +122,24 @@ public class UnixPtyProcess extends PtyProcess {
       out = myPty.getOutputStream();
     }
     return out;
+  }
+
+  public synchronized Pty getAdditionalPty() {
+    return myAdditionalPty;
+  }
+
+  public synchronized InputStream getAdditionalPtyInputStream() {
+    if (null == myAdditionalPtyIn) {
+      myAdditionalPtyIn = myAdditionalPty.getInputStream();
+    }
+    return myAdditionalPtyIn;
+  }
+
+  public synchronized OutputStream getAdditionalPtyOutputStream() {
+    if (null == myAdditionalPtyOut) {
+      myAdditionalPtyOut = myAdditionalPty.getOutputStream();
+    }
+    return myAdditionalPtyOut;
   }
 
   /**
@@ -273,6 +295,18 @@ public class UnixPtyProcess extends PtyProcess {
               retry = true;
           }
         }
+
+        if (myAdditionalPty != null) {
+          for (int attempt = 0; attempt < 1000 && retry; attempt++) {
+            retry = false;
+            try {
+              myAdditionalPty.setTerminalSize(size);
+            } catch (IllegalStateException e) {
+              if (JTermios.errno() == ENOTTY)
+                retry = true;
+            }
+          }
+        }
       }
     }
     if (pid == -1) {
@@ -353,6 +387,9 @@ public class UnixPtyProcess extends PtyProcess {
     if (myErrPty != null) {
       myErrPty.setTerminalSize(winSize);
     }
+    if (myAdditionalPty != null) {
+      myAdditionalPty.setTerminalSize(winSize);
+    }
     Pty.raise(pid, SIGWINCH);
   }
 
@@ -427,6 +464,7 @@ public class UnixPtyProcess extends PtyProcess {
         }
         myPty.breakRead();
         if (myErrPty != null) myErrPty.breakRead();
+        if (myAdditionalPty != null) myAdditionalPty.breakRead();
       }
     }
 

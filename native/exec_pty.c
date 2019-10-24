@@ -123,14 +123,30 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 		dup2(console && err_fds >= 0 ? err_fds : fds, STDERR_FILENO);  /* dup stderr */
 
 		if (add_pts_client_fd >= 0) {
-		    dup2(add_fds, add_pts_client_fd);
-		    dup2(add_fds, add_pts_client_fd+1);
+		    fprintf(stderr, "attaching additional pty for client fd %d and pty fd %d\n", add_pts_client_fd, add_fds);
 
-		    close(add_fds);
+		    int argc = 0;
+		    for (argc = 0; argv[argc] != NULL; argc++) {
+		    }
+
+		    for (int i = 0; i < argc; i++) {
+		        if (strcmp(argv[i], "_DBG_PTY_") == 0) {
+		            char** argv2 = argv;
+		            char* result;
+		            asprintf(&result, "&%d", add_fds);
+		            argv2[i] = result;
+        		    fprintf(stderr, "replaced _DBG_PTY_ at %d", i);
+		            break;
+		        }
+		    }
+//		    int one = dup2(add_fds, add_pts_client_fd);
+//		    int two = dup2(add_fds, add_pts_client_fd+1);
+//		    fprintf(stderr, "attached additional pty at %d and %d\n", add_pts_client_fd, one, two);
 		}
 
 		close(fds);  /* done with fds. */
 		if (console && err_fds >= 0) close(err_fds);
+		if (add_fds >= 0) close(add_fds);
 
 		/* Close all the fd's in the child */
 		{
