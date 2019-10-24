@@ -49,18 +49,18 @@ public abstract class PtyProcess extends Process {
     return exec(command, environment, workingDirectory, false, false, null);
   }
 
-  @Deprecated
-  public static PtyProcess exec(String[] command, String[] environment) throws IOException {
-    return exec(command, environment, null, false);
-  }
+//  @Deprecated
+//  public static PtyProcess exec(String[] command, String[] environment) throws IOException {
+//    return exec(command, environment, null, false);
+//  }
 
-  @Deprecated
-  public static PtyProcess exec(String[] command, String[] environment, String workingDirectory, boolean console) throws IOException {
-    if (Platform.isWindows()) {
-      return new WinPtyProcess(command, environment, workingDirectory, console);
-    }
-    return new UnixPtyProcess(command, environment, workingDirectory, new Pty(console), console ? new Pty() : null);
-  }
+//  @Deprecated
+//  public static PtyProcess exec(String[] command, String[] environment, String workingDirectory, boolean console) throws IOException {
+//    if (Platform.isWindows()) {
+//      return new WinPtyProcess(command, environment, workingDirectory, console);
+//    }
+//    return new UnixPtyProcess(command, environment, workingDirectory, new Pty(console), console ? new Pty() : null);
+//  }
 
   public static PtyProcess exec(String[] command, Map<String, String> environment, String workingDirectory, boolean console)
     throws IOException {

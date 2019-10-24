@@ -51,7 +51,8 @@ void restore_signals() {
 }
 
 pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const char *dirpath,
-		       const char *pts_name, int fdm, const char *err_pts_name, int err_fdm, int console)
+		       const char *pts_name, int fdm, const char *err_pts_name, int err_fdm, int console,
+		       int add_pts_client_fd, const char *add_pts_name, int add_pts_fdm)
 {
 	pid_t childpid;
 	char *full_path;
@@ -98,9 +99,15 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 			}
 		}
 
+        int add_fds = -1;
+        if (add_pts_client_fd >= 0) {
+            add_fds = ptys_open(add_pts_fdm, add_pts_name, true);
+        }
+
 		/* close masters, no need in the child */
 		close(fdm);
 		if (console && err_fdm >= 0) close(err_fdm);
+		if (add_pts_fdm >= 0) close(add_pts_fdm);
 
 		if (console) {
 			set_noecho(fds);
@@ -114,6 +121,13 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 		dup2(fds, STDIN_FILENO);   /* dup stdin */
 		dup2(fds, STDOUT_FILENO);  /* dup stdout */
 		dup2(console && err_fds >= 0 ? err_fds : fds, STDERR_FILENO);  /* dup stderr */
+
+		if (add_pts_client_fd >= 0) {
+		    dup2(add_fds, add_pts_client_fd);
+		    dup2(add_fds, add_pts_client_fd+1);
+
+		    close(add_fds);
+		}
 
 		close(fds);  /* done with fds. */
 		if (console && err_fds >= 0) close(err_fds);
@@ -136,6 +150,8 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 	} else if (childpid != 0) { /* parent */
 		if (console) {
 			set_noecho(fdm);
+	        // fixme correct?
+			set_noecho(add_pts_fdm);
 		}
 
 		free(full_path);

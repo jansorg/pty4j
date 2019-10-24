@@ -22,6 +22,7 @@ public class PtyProcessBuilder {
   private Integer myInitialColumns;
   private Integer myInitialRows;
   private boolean myWindowsAnsiColorEnabled = false;
+  private Integer myAdditionalPtyFD;
 
   public PtyProcessBuilder() {
   }
@@ -91,6 +92,12 @@ public class PtyProcessBuilder {
   }
 
   @NotNull
+  public PtyProcessBuilder setAdditionalPtyFD(int fileDescriptor) {
+    myAdditionalPtyFD = fileDescriptor;
+    return this;
+  }
+
+  @NotNull
   public PtyProcess start() throws IOException {
     if (myEnvironment == null) {
       myEnvironment = System.getenv();
@@ -101,9 +108,11 @@ public class PtyProcessBuilder {
                                                       myRedirectErrorStream,
                                                       myInitialColumns,
                                                       myInitialRows,
-                                                      myWindowsAnsiColorEnabled);
+                                                      myWindowsAnsiColorEnabled,
+                                                      myAdditionalPtyFD);
     if (Platform.isWindows()) {
       if (myCygwin) {
+        // fixme pass additional pty
         return new CygwinPtyProcess(myCommand, myEnvironment, myDirectory, myLogFile, myConsole);
       }
       return new WinPtyProcess(options, myConsole);
