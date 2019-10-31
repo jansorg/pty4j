@@ -5,12 +5,11 @@ plugins {
   id 'java-library'
   id 'com.jfrog.bintray' version '1.8.4'
   id 'maven-publish'
-//  id "com.github.johnrengelman.shadow" version "5.1.0"
 }
 
 apply plugin: 'maven-publish'
 
-def pathToNativeInJar = 'resources/com/pty4j/native'
+def pathToNativeInJar = 'resources/bashpro/pty4j/native'
 def projectVersion = new File(rootProject.projectDir, 'VERSION').text
 
 version = projectVersion

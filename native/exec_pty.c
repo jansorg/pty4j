@@ -54,8 +54,6 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 		       const char *pts_name, int fdm, const char *err_pts_name, int err_fdm, int console,
 		       const char *add_pts_name, int add_pts_fdm)
 {
-    fprintf(stderr, "Executing with new libary\n");
-
 	pid_t childpid;
 	char *full_path;
 
@@ -76,7 +74,6 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 		free(full_path);
 		return -1;
 	} else if (childpid == 0) { /* child */
-
 		chdir(dirpath);
 
 		int fds;
@@ -110,8 +107,6 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
               }
           }
 
-        fprintf("add_fds: opened pty at fd %d", add_fds);
-
 		/* close masters, no need in the child */
 		close(fdm);
 		if (console && err_fdm >= 0) close(err_fdm);
@@ -131,17 +126,12 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 		dup2(console && err_fds >= 0 ? err_fds : fds, STDERR_FILENO);  /* dup stderr */
 
 		if (add_pts_name != NULL) {
-		    fprintf(stderr, "attaching additional pty for pty name %s and pty fd %d\n", add_pts_name, add_fds);
-
             char** argv2 = argv;
 		    for (int i = 0; argv[i] != NULL; i++) {
-                fprintf("argv[%chd]: %s\n",i, argv[i]);
-
 		        if (strcmp(argv[i], "_DBG_PTY_") == 0) {
 		            char* result;
 		            asprintf(&result, "%s", add_pts_name);
 		            argv2[i] = result;
-		            fprintf(stderr, "replaced _DBG_PTY_ at %d to %s\n", i, add_pts_name);
 		        }
 		    }
 		}
@@ -168,10 +158,11 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 	} else if (childpid != 0) { /* parent */
 		if (console) {
 			set_noecho(fdm);
-
-            // fixme correct?
-            set_noecho(add_pts_fdm);
 		}
+
+
+        // fixme correct?
+        set_noecho(add_pts_fdm);
 
 		free(full_path);
 		return childpid;
