@@ -1,6 +1,6 @@
 /*
  * JPty - A small PTY interface for Java.
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -427,12 +427,11 @@ public class PtyHelpers {
                             String err_pts_name,
                             int err_fdm,
                             boolean console,
-                            int additionalPtyClientFD,
-                            String additionalPtySlaveName,
-                            int additionalPtyMasterFD) {
+                            String add_pts_name,
+                            int add_pty_fdm) {
     PtyExecutor executor = getPtyExecutor();
     return executor.execPty(full_path, argv, envp, dirpath, pts_name, fdm, err_pts_name, err_fdm, console,
-            additionalPtyClientFD, additionalPtySlaveName, additionalPtyMasterFD);
+             add_pts_name, add_pty_fdm);
   }
 
   public static class winsize extends Structure {

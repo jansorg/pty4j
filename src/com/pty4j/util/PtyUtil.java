@@ -180,11 +180,11 @@ public class PtyUtil {
     String result;
 
     if (Platform.isMac()) {
-      result = "libpty.dylib";
+      result = "libpty-bashpro.dylib";
     } else if (Platform.isWindows()) {
-      result = "winpty.dll";
+      result = "winpty-bashpro.dll";
     } else if (Platform.isLinux() || Platform.isFreeBSD() || Platform.isOpenBSD() || Platform.isAndroid()) {
-      result = "libpty.so";
+      result = "libpty-bashpro.so";
     } else {
       throw new IllegalStateException("Platform " + Platform.getOSType() + " is not supported");
     }

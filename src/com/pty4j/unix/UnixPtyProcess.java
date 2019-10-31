@@ -87,9 +87,9 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
   public UnixPtyProcess(@NotNull PtyProcessOptions options, boolean consoleMode) throws IOException {
     myPty = new Pty(consoleMode);
     myErrPty = options.isRedirectErrorStream() ? null : (consoleMode ? new Pty() : null);
-    myAdditionalPty = options.getMyAdditionalPtyFD() != null ? new Pty(consoleMode) : null;
+    myAdditionalPty = options.isPassAdditionalPtyFD() ? new Pty(consoleMode) : null;
     String dir = MoreObjects.firstNonNull(options.getDirectory(), ".");
-    execInPty(options.getCommand(), PtyUtil.toStringArray(options.getEnvironment()), dir, myPty, myErrPty, options.getMyAdditionalPtyFD(), myAdditionalPty);
+    execInPty(options.getCommand(), PtyUtil.toStringArray(options.getEnvironment()), dir, myPty, myErrPty, myAdditionalPty);
   }
 
   public Pty getPty() {
@@ -129,14 +129,14 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
   }
 
   public synchronized InputStream getAdditionalPtyInputStream() {
-    if (null == myAdditionalPtyIn) {
+    if (null == myAdditionalPtyIn && myAdditionalPty != null) {
       myAdditionalPtyIn = myAdditionalPty.getInputStream();
     }
     return myAdditionalPtyIn;
   }
 
   public synchronized OutputStream getAdditionalPtyOutputStream() {
-    if (null == myAdditionalPtyOut) {
+    if (null == myAdditionalPtyOut && myAdditionalPty != null) {
       myAdditionalPtyOut = myAdditionalPty.getOutputStream();
     }
     return myAdditionalPtyOut;
@@ -242,7 +242,7 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
     return (Pty.raise(pid, NOOP) == 0);
   }
 
-  private void execInPty(String[] command, String[] environment, String workingDirectory, Pty pty, Pty errPty, Integer additionalPtyClientFD, Pty additionalPty) throws IOException {
+  private void execInPty(String[] command, String[] environment, String workingDirectory, Pty pty, Pty errPty, Pty additionalPty) throws IOException {
     String cmd = command[0];
     SecurityManager s = System.getSecurityManager();
     if (s != null) {
@@ -257,12 +257,11 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
     final int errMasterFD = errPty == null ? -1 : errPty.getMasterFD();
     final boolean console = pty.isConsole();
 
-    final int addPtyClientFD = additionalPtyClientFD == null ? -1 : additionalPtyClientFD;
     final String addPtySlaveName = additionalPty == null ? null : additionalPty.getSlaveName();
     final int addPtyMasterFD = additionalPty == null ? -1 : additionalPty.getMasterFD();
 
     // int fdm = pty.get
-    Reaper reaper = new Reaper(command, environment, workingDirectory, slaveName, masterFD, errSlaveName, errMasterFD, console, addPtyClientFD, addPtySlaveName, addPtyMasterFD);
+    Reaper reaper = new Reaper(command, environment, workingDirectory, slaveName, masterFD, errSlaveName, errMasterFD, console, addPtySlaveName, addPtyMasterFD);
 
     reaper.setDaemon(true);
     reaper.start();
@@ -361,7 +360,7 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
 
   int exec(String[] cmd, String[] envp, String dirname, String slaveName, int masterFD,
            String errSlaveName, int errMasterFD, boolean console,
-           int additionalPtyClientFD, String additionalPtySlaveName, int additionalPtyMasterFD) throws IOException {
+           String additionalPtyName, int additionalPtyMasterFD) throws IOException {
     int pid = -1;
 
     if (cmd == null) {
@@ -373,7 +372,7 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
     }
 
     return PtyHelpers.execPty(cmd[0], cmd, envp, dirname, slaveName, masterFD, errSlaveName, errMasterFD, console,
-            additionalPtyClientFD, additionalPtySlaveName, additionalPtyMasterFD);
+            additionalPtyName, additionalPtyMasterFD);
   }
 
   int waitFor(int processID) {
@@ -417,11 +416,10 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
     private boolean myConsole;
     private int myAdditionalPtyMasterFD;
     private String myAdditionalPtySlaveName;
-    private int myAdditionalPtyClientFD;
     volatile Throwable myException;
 
     public Reaper(String[] command, String[] environment, String workingDirectory, String slaveName, int masterFD, String errSlaveName,
-                  int errMasterFD, boolean console, int additionalPtyClientFD, String additionalPtySlaveName, int additionalPtyMasterFD) {
+                  int errMasterFD, boolean console, String additionalPtySlaveName, int additionalPtyMasterFD) {
       super("PtyProcess Reaper for " + Arrays.toString(command));
       myCommand = command;
       myEnv = environment;
@@ -432,14 +430,13 @@ public class UnixPtyProcess extends PtyProcess implements AdditionalPtyProcess {
       myErrMasterFD = errMasterFD;
       myConsole = console;
       myException = null;
-      myAdditionalPtyClientFD = additionalPtyClientFD;
-      myAdditionalPtyMasterFD = additionalPtyMasterFD;
       myAdditionalPtySlaveName = additionalPtySlaveName;
+      myAdditionalPtyMasterFD = additionalPtyMasterFD;
     }
 
     int execute(String[] cmd, String[] env, String dir) throws IOException {
       return exec(cmd, env, dir, mySlaveName, myMasterFD, myErrSlaveName, myErrMasterFD, myConsole,
-              myAdditionalPtyClientFD, myAdditionalPtySlaveName, myAdditionalPtyMasterFD);
+              myAdditionalPtySlaveName, myAdditionalPtyMasterFD);
     }
 
     @Override

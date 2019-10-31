@@ -22,7 +22,7 @@ public class PtyProcessBuilder {
   private Integer myInitialColumns;
   private Integer myInitialRows;
   private boolean myWindowsAnsiColorEnabled = false;
-  private Integer myAdditionalPtyFD;
+  private boolean myPassAdditionalPty;
 
   public PtyProcessBuilder() {
   }
@@ -92,8 +92,8 @@ public class PtyProcessBuilder {
   }
 
   @NotNull
-  public PtyProcessBuilder setAdditionalPtyFD(@Nullable Integer fileDescriptor) {
-    myAdditionalPtyFD = fileDescriptor;
+  public PtyProcessBuilder setPassAdditionalPty(boolean passAdditionalPty) {
+    myPassAdditionalPty = passAdditionalPty;
     return this;
   }
 
@@ -109,7 +109,7 @@ public class PtyProcessBuilder {
                                                       myInitialColumns,
                                                       myInitialRows,
                                                       myWindowsAnsiColorEnabled,
-                                                      myAdditionalPtyFD);
+                                                      myPassAdditionalPty);
     if (Platform.isWindows()) {
       if (myCygwin) {
         // fixme pass additional pty

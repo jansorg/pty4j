@@ -52,8 +52,10 @@ void restore_signals() {
 
 pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const char *dirpath,
 		       const char *pts_name, int fdm, const char *err_pts_name, int err_fdm, int console,
-		       int add_pts_client_fd, const char *add_pts_name, int add_pts_fdm)
+		       const char *add_pts_name, int add_pts_fdm)
 {
+    fprintf(stderr, "Executing with new libary\n");
+
 	pid_t childpid;
 	char *full_path;
 
@@ -99,15 +101,21 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 			}
 		}
 
-        int add_fds = -1;
-        if (add_pts_client_fd >= 0) {
-            add_fds = ptys_open(add_pts_fdm, add_pts_name, true);
-        }
+          int add_fds = -1;
+          if (add_pts_name != NULL) {
+              add_fds = ptys_open(add_pts_fdm, add_pts_name, true);
+              if (add_fds < 0) {
+                  fprintf(stderr, "%s(%d): returning due to error with add_fdm: %s\n", __FUNCTION__, __LINE__, strerror(errno));
+                  return -1;
+              }
+          }
+
+        fprintf("add_fds: opened pty at fd %d", add_fds);
 
 		/* close masters, no need in the child */
 		close(fdm);
 		if (console && err_fdm >= 0) close(err_fdm);
-		if (add_pts_fdm >= 0) close(add_pts_fdm);
+		if (add_pts_name != NULL) close(add_pts_fdm);
 
 		if (console) {
 			set_noecho(fds);
@@ -122,39 +130,33 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 		dup2(fds, STDOUT_FILENO);  /* dup stdout */
 		dup2(console && err_fds >= 0 ? err_fds : fds, STDERR_FILENO);  /* dup stderr */
 
-		if (add_pts_client_fd >= 0) {
-		    fprintf(stderr, "attaching additional pty for client fd %d and pty fd %d\n", add_pts_client_fd, add_fds);
+		if (add_pts_name != NULL) {
+		    fprintf(stderr, "attaching additional pty for pty name %s and pty fd %d\n", add_pts_name, add_fds);
 
-		    int argc = 0;
-		    for (argc = 0; argv[argc] != NULL; argc++) {
-		    }
+            char** argv2 = argv;
+		    for (int i = 0; argv[i] != NULL; i++) {
+                fprintf("argv[%chd]: %s\n",i, argv[i]);
 
-		    for (int i = 0; i < argc; i++) {
 		        if (strcmp(argv[i], "_DBG_PTY_") == 0) {
-		            char** argv2 = argv;
 		            char* result;
-		            asprintf(&result, "&%d", add_fds);
+		            asprintf(&result, "%s", add_pts_name);
 		            argv2[i] = result;
-        		    fprintf(stderr, "replaced _DBG_PTY_ at %d", i);
-		            break;
+		            fprintf(stderr, "replaced _DBG_PTY_ at %d to %s\n", i, add_pts_name);
 		        }
 		    }
-//		    int one = dup2(add_fds, add_pts_client_fd);
-//		    int two = dup2(add_fds, add_pts_client_fd+1);
-//		    fprintf(stderr, "attached additional pty at %d and %d\n", add_pts_client_fd, one, two);
 		}
 
 		close(fds);  /* done with fds. */
 		if (console && err_fds >= 0) close(err_fds);
-		if (add_fds >= 0) close(add_fds);
 
 		/* Close all the fd's in the child */
 		{
 			int fdlimit = sysconf(_SC_OPEN_MAX);
-			int fd = 3;
-
-			while (fd < fdlimit)
-				close(fd++);
+            for (int fd = 3; fd < fdlimit; fd++) {
+			    if (fd != add_fds) {
+			        close(fd);
+			    }
+			}
 		}
 
 		restore_signals();
@@ -166,8 +168,9 @@ pid_t exec_pty(const char *path, char *const argv[], char *const envp[], const c
 	} else if (childpid != 0) { /* parent */
 		if (console) {
 			set_noecho(fdm);
-	        // fixme correct?
-			set_noecho(add_pts_fdm);
+
+            // fixme correct?
+            set_noecho(add_pts_fdm);
 		}
 
 		free(full_path);

@@ -10,6 +10,8 @@ import java.io.OutputStream;
  * @author jansorg
  */
 public interface AdditionalPtyProcess {
+    String PTY_PLACEHOLDER = "_DBG_PTY_";
+
     @Nullable
     Pty getAdditionalPty();
 

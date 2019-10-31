@@ -13,7 +13,7 @@ public class PtyProcessOptions {
   private final Integer myInitialColumns;
   private final Integer myInitialRows;
   private final boolean myWindowsAnsiColorEnabled;
-  private final Integer myAdditionalPtyFD;
+  private final boolean myPassAdditionalPtyFD;
 
   PtyProcessOptions(@NotNull String[] command,
                     @Nullable Map<String, String> environment,
@@ -22,7 +22,7 @@ public class PtyProcessOptions {
                     @Nullable Integer initialColumns,
                     @Nullable Integer initialRows,
                     boolean windowsAnsiColorEnabled,
-                    @Nullable Integer additionalPtyClientFD) {
+                    boolean useAdditionalPTY) {
     myCommand = command;
     myEnvironment = environment;
     myDirectory = directory;
@@ -30,7 +30,7 @@ public class PtyProcessOptions {
     myInitialColumns = initialColumns;
     myInitialRows = initialRows;
     myWindowsAnsiColorEnabled = windowsAnsiColorEnabled;
-    myAdditionalPtyFD = additionalPtyClientFD;
+    myPassAdditionalPtyFD = useAdditionalPTY;
   }
 
   @NotNull
@@ -66,8 +66,7 @@ public class PtyProcessOptions {
     return myWindowsAnsiColorEnabled;
   }
 
-  @Nullable
-  public Integer getMyAdditionalPtyFD() {
-    return myAdditionalPtyFD;
+  public boolean isPassAdditionalPtyFD() {
+    return myPassAdditionalPtyFD;
   }
 }
