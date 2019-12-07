@@ -182,7 +182,7 @@ public class PtyUtil {
     if (Platform.isMac()) {
       result = "libpty-bashpro.dylib";
     } else if (Platform.isWindows()) {
-      result = "winpty-bashpro.dll";
+      result = "winpty.dll";
     } else if (Platform.isLinux() || Platform.isFreeBSD() || Platform.isOpenBSD() || Platform.isAndroid()) {
       result = "libpty-bashpro.so";
     } else {
