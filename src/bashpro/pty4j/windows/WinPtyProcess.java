@@ -1,8 +1,8 @@
 package bashpro.pty4j.windows;
 
-import bashpro.pty4j.PtyProcess;
 import bashpro.pty4j.PtyProcessOptions;
-import bashpro.pty4j.WinSize;
+import com.pty4j.PtyProcess;
+import com.pty4j.WinSize;
 import com.sun.jna.platform.win32.Advapi32Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

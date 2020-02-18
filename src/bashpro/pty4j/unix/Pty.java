@@ -7,8 +7,8 @@
  *******************************************************************************/
 package bashpro.pty4j.unix;
 
-import bashpro.pty4j.WinSize;
 import bashpro.pty4j.util.Pair;
+import com.pty4j.WinSize;
 import jtermios.FDSet;
 import jtermios.JTermios;
 

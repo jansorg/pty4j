@@ -1,7 +1,7 @@
 package bashpro.pty4j.windows;
 
-import bashpro.pty4j.WinSize;
 import bashpro.pty4j.util.PtyUtil;
+import com.pty4j.WinSize;
 import com.sun.jna.*;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinBase;

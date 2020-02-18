@@ -21,8 +21,8 @@
 package bashpro.pty4j.unix.macosx;
 
 
-import bashpro.pty4j.WinSize;
 import bashpro.pty4j.unix.PtyHelpers;
+import com.pty4j.WinSize;
 import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.StringArray;

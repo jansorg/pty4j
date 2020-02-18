@@ -3,6 +3,7 @@ package bashpro.pty4j;
 import bashpro.pty4j.unix.UnixPtyProcess;
 import bashpro.pty4j.windows.CygwinPtyProcess;
 import bashpro.pty4j.windows.WinPtyProcess;
+import com.pty4j.PtyProcess;
 import com.sun.jna.Platform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
