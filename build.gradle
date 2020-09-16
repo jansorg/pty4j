@@ -75,7 +75,7 @@ task testJar(type: Test, dependsOn: [jar, testClasses]) {
                             sourceSets.test.output.classesDirs,
                             sourceSets.test.output.resourcesDir,
                             configurations.testRuntimeClasspath)
-  systemProperty 'pty4j.preferred.native.folder', 'false'
+  systemProperty 'pty4j-bashsupport.preferred.native.folder', 'false'
   shouldRunAfter test
 }
 
@@ -99,8 +99,8 @@ publishing {
     MyPublication(MavenPublication) {
       from components.java
       groupId 'com.bashsupport.pty4j'
-      artifactId 'pty4j'
-      version System.getenv('BINTRAY_USER') != null ? projectVersion : projectVersion + '-SNAPSHOT'
+      artifactId 'pty4j-bashsupport'
+      version projectVersion
       artifact sourcesZip
       pom {
         name = 'pty4j'

@@ -20,7 +20,7 @@ public class PtyUtil {
   public static final String OS_VERSION = System.getProperty("os.version").toLowerCase();
 
   private final static String PTY_LIB_FOLDER = System.getenv("PTY_LIB_FOLDER");
-  public static final String PREFERRED_NATIVE_FOLDER_KEY = "pty4j.preferred.native.folder";
+  public static final String PREFERRED_NATIVE_FOLDER_KEY = "pty4j-bashsupport.preferred.native.folder";
 
   public static String[] toStringArray(Map<String, String> environment) {
     if (environment == null) return new String[0];
@@ -101,10 +101,24 @@ public class PtyUtil {
 
   @NotNull
   public static File resolveNativeFile(@NotNull String fileName) throws Exception {
-    File preferredLibPtyFolder = getPreferredLibPtyFolder();
-    if (preferredLibPtyFolder != null) {
-      return resolveNativeFileFromFS(preferredLibPtyFolder, fileName);
+    // patched: this always returns null
+//    File preferredLibPtyFolder = getPreferredLibPtyFolder();
+//    if (preferredLibPtyFolder != null) {
+//      return resolveNativeFileFromFS(preferredLibPtyFolder, fileName);
+//    }
+
+    // patched: first locate by parent-folder-of-jar/pty4j-bashsupport/libpty-bashsupport
+    //   then proceed with the extraction, the original logic was reversed
+
+    File jarParentFolder = new File(getJarContainingFolderPath(WinPty.class));
+    File file = resolveNativeFileFromFS(new File(jarParentFolder, "pty4j-bashsupport"), fileName);
+    if (!file.exists()) {
+      file = resolveNativeFileFromFS(jarParentFolder, fileName);
     }
+    if (file.exists()) {
+      return file;
+    }
+
     Exception extractException;
     try {
       File destDir = ExtractedNative.getInstance().getDestDir();
@@ -112,14 +126,6 @@ public class PtyUtil {
     }
     catch (Exception e) {
       extractException = e;
-    }
-    File jarParentFolder = new File(getJarContainingFolderPath(WinPty.class));
-    File file = resolveNativeFileFromFS(jarParentFolder, fileName);
-    if (!file.exists()) {
-      file = resolveNativeFileFromFS(new File(jarParentFolder, "libpty-bashpro"), fileName);
-    }
-    if (file.exists()) {
-      return file;
     }
     throw extractException;
   }
