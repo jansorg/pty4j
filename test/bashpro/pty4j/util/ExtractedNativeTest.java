@@ -74,7 +74,7 @@ public class ExtractedNativeTest {
 
   @Test
   public void extractsFiles() {
-    System.setProperty("pty4j.tmpdir", "/home/segrey/temp");
+    //System.setProperty("pty4j.tmpdir", "/home/segrey/temp");
     Set<Pair<String, String>> pairs = new HashSet<>();
     for (String location : ExtractedNative.LOCATIONS) {
       int ind = location.indexOf("/");

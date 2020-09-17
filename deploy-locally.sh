@@ -1,1 +1,1 @@
-gradle clean build publishToMavenLocal -x testJar -x test
+gradle clean build testJar publishToMavenLocal -x test
