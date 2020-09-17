@@ -75,7 +75,6 @@ task testJar(type: Test, dependsOn: [jar, testClasses]) {
                             sourceSets.test.output.classesDirs,
                             sourceSets.test.output.resourcesDir,
                             configurations.testRuntimeClasspath)
-  systemProperty 'pty4j-bashsupport.preferred.native.folder', 'false'
   shouldRunAfter test
 }
 
@@ -83,7 +82,9 @@ check.dependsOn test, testJar
 
 dependencies {
   compileOnly 'org.jetbrains.pty4j:pty4j:0.9.6'
+  testCompile 'org.jetbrains.pty4j:pty4j:0.9.6'
   compileOnly 'org.jetbrains.pty4j:purejavacomm:0.0.11.1'
+  testCompile 'org.jetbrains.pty4j:purejavacomm:0.0.11.1'
 
   implementation 'org.jetbrains:annotations:16.0.2'
   implementation 'com.google.guava:guava:25.1-jre'

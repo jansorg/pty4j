@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.CodeSource;
 import java.util.List;
 import java.util.Map;
@@ -38,19 +39,26 @@ public class PtyUtil {
    * @param aclass a class to find a jar
    * @return
    */
-  public static String getJarContainingFolderPath(Class aclass) throws Exception {
+  public static String getJarContainingFolderPath(Class<?> aclass) throws Exception {
+    File jarFile = null;
+
+    // for class files on disk, not in a jar
+    // for some reason this throws an exception with the JRE of 2020.2.2
     CodeSource codeSource = aclass.getProtectionDomain().getCodeSource();
+    if (codeSource != null && codeSource.getLocation() != null) {
+      try {
+          jarFile = new File(codeSource.getLocation().toURI());
+      } catch (Exception e) {
+          // e.g. "not an hierarchical URI"
+      }
+    }
 
-    File jarFile;
-
-    if (codeSource.getLocation() != null) {
-      jarFile = new File(codeSource.getLocation().toURI());
-    } else {
+    if (jarFile == null) {
       String path = aclass.getResource(aclass.getSimpleName() + ".class").getPath();
 
       int startIndex = path.indexOf(":") + 1;
       int endIndex = path.indexOf("!");
-      if (startIndex == -1 || endIndex == -1) {
+      if (startIndex == 0 || endIndex == -1) {
         throw new IllegalStateException("Class " + aclass.getSimpleName() + " is located not within a jar: " + path);
       }
       String jarFilePath = path.substring(startIndex, endIndex);
@@ -110,13 +118,20 @@ public class PtyUtil {
     // patched: first locate by parent-folder-of-jar/pty4j-bashsupport/libpty-bashsupport
     //   then proceed with the extraction, the original logic was reversed
 
-    File jarParentFolder = new File(getJarContainingFolderPath(WinPty.class));
-    File file = resolveNativeFileFromFS(new File(jarParentFolder, "pty4j-bashsupport"), fileName);
-    if (!file.exists()) {
+    try {
+      File jarParentFolder = new File(getJarContainingFolderPath(WinPty.class));
+
+      File file = resolveNativeFileFromFS(new File(jarParentFolder, "pty4j-bashsupport"), fileName);
+      if (file.exists()) {
+        return file;
+      }
+
       file = resolveNativeFileFromFS(jarParentFolder, fileName);
-    }
-    if (file.exists()) {
-      return file;
+      if (file.exists()) {
+        return file;
+      }
+    } catch (Exception e) {
+      // don't throw, continue with extraction
     }
 
     Exception extractException;

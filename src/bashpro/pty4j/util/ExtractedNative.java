@@ -22,20 +22,20 @@ class ExtractedNative {
 
   private static final Logger LOG = Logger.getLogger(ExtractedNative.class);
   static final String[] LOCATIONS = {
-      "freebsd/x86/libpty-bashpro.so",
-      "freebsd/x86_64/libpty-bashpro.so",
+//      "freebsd/x86/libpty-bashpro.so",
+//      "freebsd/x86_64/libpty-bashpro.so",
       "linux/x86/libpty-bashpro.so",
       "linux/x86_64/libpty-bashpro.so",
-      "linux/ppc64le/libpty-bashpro.so",
-      "macosx/x86/libpty-bashpro.dylib",
+//      "linux/ppc64le/libpty-bashpro.so",
+//      "macosx/x86/libpty-bashpro.dylib",
       "macosx/x86_64/libpty-bashpro.dylib",
       "win/x86/winpty-agent.exe",
       "win/x86/winpty.dll",
       "win/x86_64/cyglaunch.exe",
       "win/x86_64/winpty-agent.exe",
       "win/x86_64/winpty.dll",
-      "win/xp/winpty-agent.exe",
-      "win/xp/winpty.dll"
+//      "win/xp/winpty-agent.exe",
+//      "win/xp/winpty.dll"
   };
   static final String DEFAULT_RESOURCE_NAME_PREFIX = "resources/bashpro/pty4j/native/";
 
