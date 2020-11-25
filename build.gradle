@@ -10,7 +10,7 @@ plugins {
 apply plugin: 'maven-publish'
 
 def pathToNativeInJar = 'resources/bashpro/pty4j/native'
-def projectVersion = new File(rootProject.projectDir, 'VERSION').text
+def projectVersion = new File(rootProject.projectDir, 'VERSION').text.trim()
 
 version = projectVersion
 
